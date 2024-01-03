@@ -1,4 +1,31 @@
 class cell{  // or colony of cells
+  // Constants for cell configuration
+  final float INTERNAL_FORCE_MIN = 0.1;
+  final float INTERNAL_FORCE_MAX = 0.5;
+  final float EXTERNAL_FORCE_MIN = -0.5;
+  final float EXTERNAL_FORCE_MAX = 0.5;
+  final float INTERNAL_MIN_DISTANCE = 40;
+  final float INTERNAL_MAX_DISTANCE = 70;
+  final float EXTERNAL_MIN_DISTANCE = 40;
+  final float EXTERNAL_MAX_DISTANCE = 70;
+  final float RADIUS_MULTIPLIER = 2;
+  final float MAX_RADIUS = 300;
+  final float POSITION_OFFSET_MIN = -50;
+  final float POSITION_OFFSET_MAX = 50;
+  final float DENSITY_MUTATION_MIN = -0.05;
+  final float DENSITY_MUTATION_MAX = 0.05;
+  final float DENSITY_MIN = 0.1;
+  final float DENSITY_MAX = 2.0;
+  final float FORCE_MUTATION_MIN = -0.1;
+  final float FORCE_MUTATION_MAX = 0.1;
+  final float MIN_DISTANCE_MUTATION_MIN = -5;
+  final float MIN_DISTANCE_MUTATION_MAX = 5;
+  final float RADIUS_MUTATION_MIN = -10;
+  final float RADIUS_MUTATION_MAX = 10;
+  final float POSITION_MUTATION_MIN = -5;
+  final float POSITION_MUTATION_MAX = 5;
+  final float TYPE_CHANGE_CHANCE = 10; // Percentage chance to change type
+  
   ArrayList<particle> swarm; // shouldn't have used the name swarm again
   float internalForces[][];
   float externalForces[][];
@@ -20,8 +47,8 @@ class cell{  // or colony of cells
     externalMins = new float[numTypes][numTypes];
     internalRadii = new float[numTypes][numTypes];
     externalRadii = new float[numTypes][numTypes];
-    // Positions are the inital relative positions of all of the particles.
-    // This is critcal to cells starting in a 'good' configuration.
+    // Positions are the initial relative positions of all of the particles.
+    // This is critical to cells starting in a 'good' configuration.
     positions = new PVector[numParticles];
     swarm = new ArrayList<particle>();
     generateNew(x,y);
@@ -32,16 +59,16 @@ class cell{  // or colony of cells
   void generateNew(float x, float y){
     for(int i = 0; i < numTypes; i++){
       for(int j= 0; j < numTypes; j++){
-        internalForces[i][j] = random(0.1,1.0) * density; // internal forces are initially attractive, but can mutate
-        internalMins[i][j] = random(40,70);
-        internalRadii[i][j] = random(internalMins[i][j]*2,300); // minimum 'primary' force range must be twice repulsive range
-        externalForces[i][j] = random(-1.0,1.0); // external forces could be attractive or repulsive
-        externalMins[i][j] = random(40,70);
-        externalRadii[i][j] = random(externalMins[i][j]*2,300);
+        internalForces[i][j] = random(INTERNAL_FORCE_MIN, INTERNAL_FORCE_MAX) * density; // internal forces are initially attractive, but can mutate
+        internalMins[i][j] = random(INTERNAL_MIN_DISTANCE, INTERNAL_MAX_DISTANCE);
+        internalRadii[i][j] = random(internalMins[i][j]*RADIUS_MULTIPLIER, MAX_RADIUS); // minimum 'primary' force range must be twice repulsive range
+        externalForces[i][j] = random(EXTERNAL_FORCE_MIN, EXTERNAL_FORCE_MAX); // external forces could be attractive or repulsive
+        externalMins[i][j] = random(EXTERNAL_MIN_DISTANCE, EXTERNAL_MAX_DISTANCE);
+        externalRadii[i][j] = random(externalMins[i][j]*RADIUS_MULTIPLIER, MAX_RADIUS);
       }
     }
     for(int  i = 0; i < numParticles; i++){
-      positions[i] = new PVector(x+random(-50,50),y+random(-50,50));
+      positions[i] = new PVector(x+random(POSITION_OFFSET_MIN, POSITION_OFFSET_MAX), y+random(POSITION_OFFSET_MIN, POSITION_OFFSET_MAX));
       swarm.add(new particle(positions[i], 1+(int)random(numTypes-1))); // type 0 is food
     }
   }
@@ -74,28 +101,28 @@ class cell{  // or colony of cells
   // When a new cell is created from a 'parent' cell the new cell's values are mutated
   // This mutates all values a 'little' bit. Mutating a few values by a larger amount could work better
   void mutateCell(){
-    density += random(-0.05, 0.05); // Mutate the density slightly
-    density = constrain(density, 0.1, 2.0); // Ensure density stays within reasonable bounds
+    density += random(DENSITY_MUTATION_MIN, DENSITY_MUTATION_MAX); // Mutate the density slightly
+    density = constrain(density, DENSITY_MIN, DENSITY_MAX); // Ensure density stays within reasonable bounds
     for(int i = 0; i < numTypes; i++){
       for(int j= 0; j < numTypes; j++){  
-        internalForces[i][j] += random(-0.1,0.1);
-        internalMins[i][j] += random(-5,5);
-        internalRadii[i][j] += random(-10,10);
-        externalForces[i][j] += random(-0.1,0.1);
-        externalMins[i][j] += random(-5,5);
-        externalRadii[i][j] += random(-10,10);
+        internalForces[i][j] += random(FORCE_MUTATION_MIN, FORCE_MUTATION_MAX);
+        internalMins[i][j] += random(MIN_DISTANCE_MUTATION_MIN, MIN_DISTANCE_MUTATION_MAX);
+        internalRadii[i][j] += random(RADIUS_MUTATION_MIN, RADIUS_MUTATION_MAX);
+        externalForces[i][j] += random(FORCE_MUTATION_MIN, FORCE_MUTATION_MAX);
+        externalMins[i][j] += random(MIN_DISTANCE_MUTATION_MIN, MIN_DISTANCE_MUTATION_MAX);
+        externalRadii[i][j] += random(RADIUS_MUTATION_MIN, RADIUS_MUTATION_MAX);
       }
     }
     for(int  i = 0; i < numParticles; i++){
-      positions[i] = new PVector(positions[i].x+random(-5,5),positions[i].y+random(-5,5));
-      if(random(100)< 10){  // 10% of the time a particle changes type
+      positions[i] = new PVector(positions[i].x+random(POSITION_MUTATION_MIN, POSITION_MUTATION_MAX), positions[i].y+random(POSITION_MUTATION_MIN, POSITION_MUTATION_MAX));
+      if(random(100)< TYPE_CHANGE_CHANCE){  // 10% of the time a particle changes type
         particle p = swarm.get(i);
         p.type = 1+(int)random(numTypes-1);
       }
     } // Could also mutate the number of particles in the cell
   }
   
-  // update a cell by appling each type of forces to each particle in the cell
+  // update a cell by applying each type of forces to each particle in the cell
   void update(){
     for(particle p: swarm){ // for each particle in this cell
       p.applyInternalForces(this);
