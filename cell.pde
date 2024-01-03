@@ -25,8 +25,8 @@ class cell{  // or colony of cells
   final float POSITION_MUTATION_MIN = -5;
   final float POSITION_MUTATION_MAX = 5;
   final float TYPE_CHANGE_CHANCE = 0; // Percentage chance to change type
-  final float HUNT_FORCE = 0.3; // Force applied when hunting prey
-  final float FLEE_FORCE = -0.3; // Force applied when fleeing from predator
+  final float HUNT_FORCE = 5.0; // Force applied when hunting prey
+  final float FLEE_FORCE = -5.0; // Force applied when fleeing from predator
   
   ArrayList<particle> swarm; // shouldn't have used the name swarm again
   float internalForces[][];

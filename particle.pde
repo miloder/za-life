@@ -18,11 +18,11 @@ class particle { // or a cell of a colony or an organelle of a cell
   // Method to apply a force to this particle
   void applyForce(PVector force) {
     // Adjust the force by the particle's density
-    force.div(density);
+    //force.div(density);
     // Add the force to the particle's velocity
     velocity.add(force);
   }
-  
+
   // applies forces based on this cell's particles
   void applyInternalForces(cell c) {
     PVector totalForce = new PVector(0, 0);
@@ -130,30 +130,33 @@ class particle { // or a cell of a colony or an organelle of a cell
     PVector acceleration = new PVector(0, 0);
     PVector vector = new PVector(0, 0);
     float dis;
-    for (particle p : food) {  // for all food particles
-      vector.mult(0);
-      vector = p.position.copy();
-      vector.sub(position);
-      if (vector.x > width * 0.5) {
-        vector.x -= width;
-      }
-      if (vector.x < width * -0.5) {
-        vector.x += width;
-      }
-      if (vector.y > height * 0.5) {
-        vector.y -= height;
-      }
-      if (vector.y < height * -0.5) {
-        vector.y += height;
-      }
-      dis = vector.mag();
-      vector.normalize();
-      // no repulsive force for food
-      if (dis < c.externalRadii[type][p.type]) {
-        PVector force = vector.copy();
-        force.mult(c.externalForces[type][p.type]*K);
-        force.mult(map(dis, 0, c.externalRadii[type][p.type], 1, 0));
-        totalForce.add(force);
+    int preyType = (type + 1) % numTypes; // Determine the prey type in the food chain
+    for (particle p : c.swarm) {  // for all particles in the cell
+      if (p.type == preyType) { // Check if the particle is the prey
+        vector.mult(0);
+        vector = p.position.copy();
+        vector.sub(position);
+        if (vector.x > width * 0.5) {
+          vector.x -= width;
+        }
+        if (vector.x < width * -0.5) {
+          vector.x += width;
+        }
+        if (vector.y > height * 0.5) {
+          vector.y -= height;
+        }
+        if (vector.y < height * -0.5) {
+          vector.y += height;
+        }
+        dis = vector.mag();
+        vector.normalize();
+        // Apply force only if the particle is within the hunting range
+        if (dis < c.externalRadii[type][p.type]) {
+          PVector force = vector.copy();
+          force.mult(c.huntBehaviors[type][p.type]);
+          force.mult(map(dis, 0, c.externalRadii[type][p.type], 1, 0));
+          totalForce.add(force);
+        }
       }
     }
     acceleration = totalForce.copy();
@@ -176,5 +179,40 @@ class particle { // or a cell of a colony or an organelle of a cell
     circle(position.x, position.y, PARTICLE_SIZE); // Use the global constant for size
     colorMode(RGB, 255); // Reset color mode to default
   }
-}
 
+  // Debugging method to print force values and distances
+  void debugInteractions(cell c) {
+    for (particle p : c.swarm) {
+      if (p != this) {
+        PVector forceVector = PVector.sub(p.position, this.position);
+        float distance = forceVector.mag();
+        forceVector.normalize();
+        float internalForce = c.internalForces[this.type][p.type];
+        float externalForce = c.externalForces[this.type][p.type];
+        println("Particle type: " + this.type + " interacting with type: " + p.type);
+        println("Distance: " + distance);
+        println("Internal force: " + internalForce + " External force: " + externalForce);
+      }
+    }
+  }
+
+  // Call this method in the main program loop to ensure update logic is running
+  void checkUpdateCall() {
+    println("Update method is being called.");
+  }
+
+  // Method to apply exaggerated forces for testing
+  void applyExaggeratedForces(cell c) {
+    PVector exaggeratedForce = new PVector(0, 0);
+    for (particle p : c.swarm) {
+      if (p != this) {
+        PVector forceVector = PVector.sub(p.position, this.position);
+        float distance = forceVector.mag();
+        if (distance < c.internalRadii[this.type][p.type]) {
+          exaggeratedForce.add(forceVector.setMag(10)); // Apply a large force for testing
+        }
+      }
+    }
+    this.applyForce(exaggeratedForce);
+  }
+}

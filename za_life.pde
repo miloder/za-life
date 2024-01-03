@@ -3,7 +3,7 @@
 // Sets of particles (cells) share forces and share food.
 // They can die of starvation or collect enough food to reproduce/
 int numTypes = 7;  // 0 is food, plus 5 more, type 1 'eats' food the others just generate forces
-float friction = 0.65;
+float friction = 0.95;
 int minPopulation = 20;
 // int numFood = 0; // starting amount of food - Removed to maintain constant particle count
 int foodRange = 1; // distance to collect food
