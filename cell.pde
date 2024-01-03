@@ -7,7 +7,7 @@ class cell{  // or colony of cells
   float internalRadii[][];
   float externalRadii[][];
   PVector positions[];  // probably better as an arraylist
-  int numParticles = 80;
+  int numParticles = 100;
   int energy = startingEnergy;
   int radius; // avg distance from center
   PVector center = new PVector(0,0); // center of the cell

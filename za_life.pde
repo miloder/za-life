@@ -4,8 +4,8 @@
 // They can die of starvation or collect enough food to reproduce/
 int numTypes = 7;  // 0 is food, plus 5 more, type 1 'eats' food the others just generate forces
 float friction = 0.65;
-int minPopulation = 15;
-int numFood = 200; // starting amount of food
+int minPopulation = 20;
+int numFood = 0; // starting amount of food
 int foodRange = 1; // distance to collect food
 int foodEnergy = 10; // energy from food
 int reproductionEnergy = 1000; 

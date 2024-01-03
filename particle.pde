@@ -1,5 +1,6 @@
 // Global constants for particle size and density
 final int PARTICLE_SIZE = 2; // Example size
+final float DAMPENING_FACTOR = 0.5; // Dampening factor to reduce overexcited motion
 
 class particle { // or a cell of a colony or an organelle of a cell
   PVector position;
@@ -12,6 +13,7 @@ class particle { // or a cell of a colony or an organelle of a cell
     position = new PVector(start.x, start.y);
     velocity = new PVector(0, 0);
     type = t;
+    density = 1.0; // Default density value
   }
 
   // applies forces based on this cell's particles
@@ -54,6 +56,8 @@ class particle { // or a cell of a colony or an organelle of a cell
       }
     }
     acceleration = totalForce.copy();
+    acceleration.div(density); // Apply density to acceleration
+    acceleration.mult(DAMPENING_FACTOR); // Apply dampening to reduce overexcited motion
     velocity.add(acceleration);
 
     position.add(velocity);
@@ -104,6 +108,8 @@ class particle { // or a cell of a colony or an organelle of a cell
       }
     }
     acceleration = totalForce.copy();
+    acceleration.div(density); // Apply density to acceleration
+    acceleration.mult(DAMPENING_FACTOR); // Apply dampening to reduce overexcited motion
     velocity.add(acceleration);
     position.add(velocity);
     position.x = (position.x + width)%width;
@@ -144,6 +150,8 @@ class particle { // or a cell of a colony or an organelle of a cell
       }
     }
     acceleration = totalForce.copy();
+    acceleration.div(density); // Apply density to acceleration
+    acceleration.mult(DAMPENING_FACTOR); // Apply dampening to reduce overexcited motion
     velocity.add(acceleration);
     position.add(velocity);
     position.x = (position.x + width)%width;
