@@ -142,6 +142,7 @@ class cell{  // or colony of cells
       p.applyInternalForces(this);
       p.applyExternalForces(this);
       p.applyFoodForces(this);
+      p.checkCollisions(swarm);
       // Check for eating and chasing or fleeing
       int preyType = (p.type + 1) % numTypes;
       int predatorType = (p.type - 1 + numTypes) % numTypes;

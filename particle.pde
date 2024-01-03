@@ -22,6 +22,33 @@ class particle { // or a cell of a colony or an organelle of a cell
     // Add the force to the particle's velocity
     velocity.add(force);
   }
+  // Check for collisions with other particles
+  void checkCollisions(ArrayList<particle> particles) {
+    for (particle other : particles) {
+      if (other != this) {
+        float d = PVector.dist(this.position, other.position);
+        float collisionDistance = PARTICLE_SIZE; // Assuming particles are circles with diameter PARTICLE_SIZE
+        if (d < collisionDistance) {
+          // Simple elastic collision response
+          PVector collisionVector = PVector.sub(this.position, other.position);
+          collisionVector.normalize();
+          collisionVector.mult(2 * (this.velocity.dot(collisionVector) - other.velocity.dot(collisionVector)));
+          collisionVector.mult(0.5); // Adjust this factor to simulate different elasticity
+          this.velocity.sub(collisionVector);
+          this.velocity.mult(0.8); // Scale down velocity by 0.8 with each collision
+          other.velocity.add(collisionVector);
+          other.velocity.mult(0.8); // Scale down velocity by 0.8 with each collision
+
+          // Reposition particles to avoid overlap, assuming equal radii
+          float overlap = 0.5 * (collisionDistance - d);
+          PVector correctionVector = collisionVector.copy();
+          correctionVector.mult(overlap);
+          this.position.add(correctionVector);
+          other.position.sub(correctionVector);
+        }
+      }
+    }
+  }
 
   // applies forces based on this cell's particles
   void applyInternalForces(cell c) {
