@@ -172,9 +172,9 @@ class particle { // or a cell of a colony or an organelle of a cell
   // display the particles with HSL color mapping
   void display() {
     colorMode(HSB, 360, 100, 100); // Adjusted to match the colorMode in setup()
-    float h = map(type, 0, numTypes-1, 223, 240); // Hue interpolation from #2239b8 to #f2e7ff
-    float s = map(type, 0, numTypes-1, 57, 100);  // Saturation interpolation
-    float l = map(type, 0, numTypes-1, 72, 100);  // Lightness interpolation
+    float h = map(type % 2 == 0 ? type : numTypes - 1 - type, 0, numTypes-1, 223, 240); // Hue interpolation with inversion for every other type
+    float s = map(type % 2 == 0 ? type : numTypes - 1 - type, 0, numTypes-1, 57, 100);  // Saturation interpolation with inversion for every other type
+    float l = map(type % 2 == 0 ? type : numTypes - 1 - type, 0, numTypes-1, 72, 100);  // Lightness interpolation with inversion for every other type
     fill(h, s, l);
     circle(position.x, position.y, PARTICLE_SIZE); // Use the global constant for size
     colorMode(RGB, 255); // Reset color mode to default
