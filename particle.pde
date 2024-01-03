@@ -151,9 +151,15 @@ class particle { // or a cell of a colony or an organelle of a cell
     velocity.mult(friction);
   }
 
-  // display the particles
+  // display the particles with HSL color mapping
   void display() {
-    fill(type*colorStep, 100, 100);
+    colorMode(HSB, 360, 100, 100); // Adjusted to match the colorMode in setup()
+    float h = map(type, 0, numTypes-1, 223, 240); // Hue interpolation from #2239b8 to #f2e7ff
+    float s = map(type, 0, numTypes-1, 57, 100);  // Saturation interpolation
+    float l = map(type, 0, numTypes-1, 72, 100);  // Lightness interpolation
+    fill(h, s, l);
     circle(position.x, position.y, PARTICLE_SIZE); // Use the global constant for size
+    colorMode(RGB, 255); // Reset color mode to default
   }
 }
+

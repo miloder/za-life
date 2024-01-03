@@ -2,8 +2,7 @@
 // By Terence Soule of Programming Chaos https://www.youtube.com/channel/UC2rO9hEjJkjqzktvtj0ggNQ
 // Sets of particles (cells) share forces and share food.
 // They can die of starvation or collect enough food to reproduce/
-int numTypes = 23;  // 0 is food, plus 5 more, type 1 'eats' food the others just generate forces
-int colorStep = 360/numTypes;
+int numTypes = 7;  // 0 is food, plus 5 more, type 1 'eats' food the others just generate forces
 float friction = 0.65;
 int minPopulation = 15;
 int numFood = 200; // starting amount of food
