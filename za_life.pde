@@ -5,7 +5,7 @@
 int numTypes = 7;  // 0 is food, plus 5 more, type 1 'eats' food the others just generate forces
 float friction = 0.65;
 int minPopulation = 20;
-int numFood = 0; // starting amount of food
+// int numFood = 0; // starting amount of food - Removed to maintain constant particle count
 int foodRange = 1; // distance to collect food
 int foodEnergy = 10; // energy from food
 int reproductionEnergy = 1000; 
@@ -32,9 +32,7 @@ void setup() {
     swarm.add(new cell(random(new_width), random(new_height)));
   }
   food = new ArrayList<particle>();
-  for (int i = 0; i < numFood; i++) {
-    food.add(new particle(new PVector(random(new_width), random(new_height)), 0));
-  }
+  // Removed food initialization loop to maintain constant particle count
   noStroke();
 }
 
@@ -46,16 +44,10 @@ void draw() {
       c.display();
     }
   }
-  for (int i = swarm.size()-1; i >= 0; i--) { // remove dead (energyless cells)
-    cell c = swarm.get(i);
-    if (c.energy <= 0) {
-      //convertToFood(c);
-      swarm.remove(i);  // could convert to food instead
-    }
-  }
+  // Removed dead cell removal loop to maintain constant particle count
   eat();  // cells collect nearby food
-  replace();  // if the pop is below minPop add cells
-  reproduce();  // cells with lots of energy reproduce
+  // Removed replace function call to maintain constant particle count
+  // Removed reproduce function call to maintain constant particle count
   
   // Apply gravitational pull away from the mouse to each particle
   applyMouseGravitation();
@@ -65,10 +57,7 @@ void draw() {
        p.display();
     }
   }
-  //don't use if dead cells are converted to food
-  if(frameCount % 5 == 0){  // add a food every 5 timesteps 
-    food.add(new particle(new PVector(random(width), random(height)), 0));
-  }
+  // Removed food addition loop to maintain constant particle count
   //println(frameRate); // to see how changes effect efficiency
 }
 
@@ -92,40 +81,11 @@ void applyMouseGravitation() {
   }
 }
 
-// for dead cells
-void convertToFood(cell c){
-  for(particle p: c.swarm){
-    food.add(new particle(p.position, 0));
-  }
-}
+// Removed convertToFood function to maintain constant particle count
 
-void reproduce(){
-  cell c;
-  for(int i = swarm.size()-1; i>=0 ;i--){
-    c = swarm.get(i);
-    if(c.energy > reproductionEnergy){ // if a cell has enough energy 
-      cell temp = new cell(random(width), random(height));  // make a new cell at a random location
-      temp.copyCell(c); // copy the parent cell's 'DNA'
-      c.energy -= startingEnergy;  // parent cell loses energy (daughter cell recieves it) 
-      temp.mutateCell(); // mutate the daughter cell
-      swarm.add(temp);
-    }
-  }
-}
+// Removed reproduce function to maintain constant particle count
 
-// If population is below minPopulation add cells by copying and mutating
-// randomly selected existing cells.
-// Note: if the population all dies simultanious the program will crash - extinction!
-void replace(){
-  if(swarm.size() < minPopulation){  
-    int parent = int(random(swarm.size()));
-    cell temp = new cell(random(width), random(height));
-    cell parentCell = swarm.get(parent);
-    temp.copyCell(parentCell);
-    temp.mutateCell();
-    swarm.add(temp);
-  }
-}
+// Removed replace function to maintain constant particle count
 
 void eat() {
   float dis;
@@ -145,7 +105,7 @@ void eat() {
           dis = vector.mag();
           if(dis < foodRange){
             c.energy += foodEnergy; // gain 100 energy for eating food 
-            food.remove(i);
+            // Removed food removal to maintain constant particle count
           }
         }
       }

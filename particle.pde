@@ -15,7 +15,14 @@ class particle { // or a cell of a colony or an organelle of a cell
     type = t;
     density = 1.0; // Default density value
   }
-
+  // Method to apply a force to this particle
+  void applyForce(PVector force) {
+    // Adjust the force by the particle's density
+    force.div(density);
+    // Add the force to the particle's velocity
+    velocity.add(force);
+  }
+  
   // applies forces based on this cell's particles
   void applyInternalForces(cell c) {
     PVector totalForce = new PVector(0, 0);

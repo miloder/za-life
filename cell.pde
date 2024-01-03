@@ -24,7 +24,9 @@ class cell{  // or colony of cells
   final float RADIUS_MUTATION_MAX = 10;
   final float POSITION_MUTATION_MIN = -5;
   final float POSITION_MUTATION_MAX = 5;
-  final float TYPE_CHANGE_CHANCE = 10; // Percentage chance to change type
+  final float TYPE_CHANGE_CHANCE = 0; // Percentage chance to change type
+  final float HUNT_FORCE = 0.3; // Force applied when hunting prey
+  final float FLEE_FORCE = -0.3; // Force applied when fleeing from predator
   
   ArrayList<particle> swarm; // shouldn't have used the name swarm again
   float internalForces[][];
@@ -39,6 +41,8 @@ class cell{  // or colony of cells
   int radius; // avg distance from center
   PVector center = new PVector(0,0); // center of the cell
   float density = 5.0; // Particle density parameter affecting internal forces and cohesion
+  float huntBehaviors[][]; // Genome for hunting behavior
+  float fleeBehaviors[][]; // Genome for fleeing behavior
   
   cell(float x, float y){
     internalForces = new float[numTypes][numTypes];
@@ -47,6 +51,8 @@ class cell{  // or colony of cells
     externalMins = new float[numTypes][numTypes];
     internalRadii = new float[numTypes][numTypes];
     externalRadii = new float[numTypes][numTypes];
+    huntBehaviors = new float[numTypes][numTypes];
+    fleeBehaviors = new float[numTypes][numTypes];
     // Positions are the initial relative positions of all of the particles.
     // This is critical to cells starting in a 'good' configuration.
     positions = new PVector[numParticles];
@@ -65,6 +71,9 @@ class cell{  // or colony of cells
         externalForces[i][j] = random(EXTERNAL_FORCE_MIN, EXTERNAL_FORCE_MAX); // external forces could be attractive or repulsive
         externalMins[i][j] = random(EXTERNAL_MIN_DISTANCE, EXTERNAL_MAX_DISTANCE);
         externalRadii[i][j] = random(externalMins[i][j]*RADIUS_MULTIPLIER, MAX_RADIUS);
+        // Initialize hunting and fleeing behaviors in the genome
+        huntBehaviors[i][j] = (i == (j + 1) % numTypes) ? HUNT_FORCE : 0; // Set hunting force if j is prey of i
+        fleeBehaviors[i][j] = (i == (j - 1 + numTypes) % numTypes) ? FLEE_FORCE : 0; // Set fleeing force if j is predator of i
       }
     }
     for(int  i = 0; i < numParticles; i++){
@@ -85,13 +94,14 @@ class cell{  // or colony of cells
         externalForces[i][j] = c.externalForces[i][j];
         externalMins[i][j] = c.externalMins[i][j];
         externalRadii[i][j] = c.externalRadii[i][j];
+        huntBehaviors[i][j] = c.huntBehaviors[i][j]; // Copy hunting behavior
+        fleeBehaviors[i][j] = c.fleeBehaviors[i][j]; // Copy fleeing behavior
       }
     }
     float x = random(width);
     float y = random(height);
     for(int  i = 0; i < numParticles; i++){
       positions[i] = new PVector(x+c.positions[i].x,y+c.positions[i].y);
-      //swarm[i] = new particle(positions[i], c.swarm[i].type);
       particle p = swarm.get(i);
       particle temp = new particle(p.position,p.type); // create a new particle from the parent
       swarm.add(temp); // add to the new cell
@@ -111,6 +121,9 @@ class cell{  // or colony of cells
         externalForces[i][j] += random(FORCE_MUTATION_MIN, FORCE_MUTATION_MAX);
         externalMins[i][j] += random(MIN_DISTANCE_MUTATION_MIN, MIN_DISTANCE_MUTATION_MAX);
         externalRadii[i][j] += random(RADIUS_MUTATION_MIN, RADIUS_MUTATION_MAX);
+        // Mutate hunting and fleeing behaviors
+        huntBehaviors[i][j] += (i == (j + 1) % numTypes) ? random(FORCE_MUTATION_MIN, FORCE_MUTATION_MAX) : 0;
+        fleeBehaviors[i][j] += (i == (j - 1 + numTypes) % numTypes) ? random(FORCE_MUTATION_MIN, FORCE_MUTATION_MAX) : 0;
       }
     }
     for(int  i = 0; i < numParticles; i++){
@@ -124,13 +137,32 @@ class cell{  // or colony of cells
   
   // update a cell by applying each type of forces to each particle in the cell
   void update(){
-    for(particle p: swarm){ // for each particle in this cell
+    for(int i = 0; i < swarm.size(); i++){ // for each particle in this cell
+      particle p = swarm.get(i);
       p.applyInternalForces(this);
       p.applyExternalForces(this);
       p.applyFoodForces(this);
+      // Check for eating and chasing or fleeing
+      int preyType = (p.type + 1) % numTypes;
+      int predatorType = (p.type - 1 + numTypes) % numTypes;
+      for(particle other : swarm){
+        float distance = PVector.dist(p.position, other.position);
+        if(other.type == preyType && distance < foodRange){
+          PVector chaseForce = PVector.sub(other.position, p.position);
+          chaseForce.normalize();
+          chaseForce.mult(huntBehaviors[p.type][other.type]);
+          p.applyForce(chaseForce); // Apply hunting behavior force
+          other.type = p.type; // Convert the prey to the eater's type
+        } else if (other.type == predatorType && distance < foodRange) {
+          PVector fleeForce = PVector.sub(p.position, other.position);
+          fleeForce.normalize();
+          fleeForce.mult(fleeBehaviors[p.type][other.type]);
+          p.applyForce(fleeForce); // Apply fleeing behavior force
+        }
+      }
     }
     energy -= 1.0; // cells lose one energy/timestep - should be a variable. Or dependent on forces generated
-}
+  }
   
   void display(){
     // Code to draw lines between the particles in a cell
