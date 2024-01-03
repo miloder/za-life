@@ -7,10 +7,13 @@ int colorStep = 360/numTypes;
 float friction = 0.85;
 int minPopulation = 15;
 int numFood = 200; // starting amount of food
-int foodRange = 5; // distance to collect food
+int foodRange = 2; // distance to collect food
 int foodEnergy = 10; // energy from food
 int reproductionEnergy = 1000; 
 int startingEnergy = 400;
+float gravitationStrength = 5; // Earth gravity strength
+boolean gravitationInverted = false;
+boolean mouseWasPressed = false; // Tracks the previous state of the mouse button
 float K = 0.2;
 ArrayList<cell> swarm;
 ArrayList<particle> food;
@@ -55,6 +58,9 @@ void draw() {
   replace();  // if the pop is below minPop add cells
   reproduce();  // cells with lots of energy reproduce
   
+  // Apply gravitational pull away from the mouse to each particle
+  applyMouseGravitation();
+  
   if(display){
     for (particle p : food) {
        p.display();
@@ -65,6 +71,26 @@ void draw() {
     food.add(new particle(new PVector(random(width), random(height)), 0));
   }
   //println(frameRate); // to see how changes effect efficiency
+}
+
+void applyMouseGravitation() {
+  PVector mousePos = new PVector(mouseX, mouseY);
+
+  for (particle p : food) {
+    PVector dir = PVector.sub(p.position, mousePos); // Direction from mouse to particle
+    dir.normalize(); // Normalize to get direction only
+    dir.mult(gravitationStrength); // Apply gravity strength with possible inversion
+    p.position.add(dir); // Move particle in the direction away from or towards the mouse
+  }
+
+  for (cell c : swarm) {
+    for (particle p : c.swarm) {
+      PVector dir = PVector.sub(p.position, mousePos); // Direction from mouse to particle
+      dir.normalize(); // Normalize to get direction only
+      dir.mult(gravitationStrength); // Apply gravity strength with possible inversion
+      p.position.add(dir); // Move particle in the direction away from or towards the mouse
+    }
+  }
 }
 
 // for dead cells
@@ -131,8 +157,17 @@ void eat() {
 void keyPressed(){
   if(key == 'd'){
     display = !display;
-  }
-    if(key == 'l'){
+  } else if(key == 'l'){
     drawLines = !drawLines;
+  } else if (key == 'z' || key == 'Z') {
+    gravitationStrength = abs(gravitationStrength); // Normal gravity
+  } else if (key == 'x' || key == 'X') {
+    gravitationStrength = -abs(gravitationStrength); // Inverted gravity
+  } else if (key == 'c' || key == 'C') {
+    gravitationStrength = 0; // No gravity
+  } else if (key == '-' && gravitationStrength > 0) {
+    gravitationStrength = max(0, gravitationStrength - 0.5); // Decrease gravity strength
+  } else if (key == '=') {
+    gravitationStrength += 0.5; // Increase gravity strength
   }
 }
