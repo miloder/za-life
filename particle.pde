@@ -1,6 +1,10 @@
+// Global constants for particle size and density
+final int PARTICLE_SIZE = 2; // Example size
+
 class particle { // or a cell of a colony or an organelle of a cell
   PVector position;
   PVector velocity;
+  float density; // Added density property
   int type;
 
   // constructor
@@ -150,6 +154,6 @@ class particle { // or a cell of a colony or an organelle of a cell
   // display the particles
   void display() {
     fill(type*colorStep, 100, 100);
-    circle(position.x, position.y, 8);
+    circle(position.x, position.y, PARTICLE_SIZE); // Use the global constant for size
   }
 }
