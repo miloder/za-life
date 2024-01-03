@@ -7,10 +7,11 @@ class cell{  // or colony of cells
   float internalRadii[][];
   float externalRadii[][];
   PVector positions[];  // probably better as an arraylist
-  int numParticles = 40;
+  int numParticles = 80;
   int energy = startingEnergy;
   int radius; // avg distance from center
   PVector center = new PVector(0,0); // center of the cell
+  float density = 5.0; // Particle density parameter affecting internal forces and cohesion
   
   cell(float x, float y){
     internalForces = new float[numTypes][numTypes];
@@ -31,7 +32,7 @@ class cell{  // or colony of cells
   void generateNew(float x, float y){
     for(int i = 0; i < numTypes; i++){
       for(int j= 0; j < numTypes; j++){
-        internalForces[i][j] = random(0.1,1.0); // internal forces are initially attractive, but can mutate
+        internalForces[i][j] = random(0.1,1.0) * density; // internal forces are initially attractive, but can mutate
         internalMins[i][j] = random(40,70);
         internalRadii[i][j] = random(internalMins[i][j]*2,300); // minimum 'primary' force range must be twice repulsive range
         externalForces[i][j] = random(-1.0,1.0); // external forces could be attractive or repulsive
@@ -48,6 +49,7 @@ class cell{  // or colony of cells
   // Used to copy the values from a parent cell to a daughter cell.
   // (I don't trust deep copy when data structures get complex :)
   void copyCell(cell c){
+    density = c.density;
     for(int i = 0; i < numTypes; i++){
       for(int j= 0; j < numTypes; j++){
         internalForces[i][j] = c.internalForces[i][j];
@@ -72,6 +74,8 @@ class cell{  // or colony of cells
   // When a new cell is created from a 'parent' cell the new cell's values are mutated
   // This mutates all values a 'little' bit. Mutating a few values by a larger amount could work better
   void mutateCell(){
+    density += random(-0.05, 0.05); // Mutate the density slightly
+    density = constrain(density, 0.1, 2.0); // Ensure density stays within reasonable bounds
     for(int i = 0; i < numTypes; i++){
       for(int j= 0; j < numTypes; j++){  
         internalForces[i][j] += random(-0.1,0.1);
